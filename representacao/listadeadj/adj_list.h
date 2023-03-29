@@ -7,8 +7,8 @@ class AdjacencyList {
     public:
         DynamicArray *head;
         
+        void initialize(int);
         void addEdge(int, int);
-        int getSize();
         int * getNeighbours(int);
         int getDegree(int);
 };
