@@ -11,7 +11,7 @@ class Queue {
     public:
         Node *head;
 
-        void initialize() {
+        Queue() {
             this->head = NULL;
         }
 
@@ -56,7 +56,7 @@ class DynamicArray {
         int max;
         int n;
 
-        void initialize() {
+        DynamicArray() {
             this->head = (int *) malloc(sizeof(int));
             this->max = 1;
             this->n = 0;
@@ -79,16 +79,22 @@ class DynamicArray {
                 free(toFree);
             }
         }
+
+        int getN() {
+            return this->n;
+        }
 };
 
 class AdjacencyList {
     public:
         DynamicArray *head;
+        int n;
         
-        void initialize(int n) {
+        AdjacencyList(int n) {
+            this->n = n;
             this->head = (DynamicArray *) malloc(sizeof(DynamicArray) * n);
             for (int i = 0; i < n; i++)
-                (this->head[i]).initialize();
+                this->head[i] = DynamicArray();
         }
 
         void addEdge(int a, int b) {
@@ -115,6 +121,10 @@ class AdjacencyList {
         int getDegree(int a) {
             return (this->head[a - 1]).n;
         }
+
+        int getN() {
+            return this->n;
+        }
 };
 
 double *getDistance(AdjacencyList graph, int n, int o) {
@@ -126,7 +136,6 @@ double *getDistance(AdjacencyList graph, int n, int o) {
     
     distance[o - 1] = 0.0;
 
-    searchQueue.initialize();
     searchQueue.enqueue(o);
 
     while (searchQueue.isEmpty() == 0) {
@@ -142,18 +151,48 @@ double *getDistance(AdjacencyList graph, int n, int o) {
     return distance;
 }
 
+DynamicArray *getComponents(AdjacencyList graph) {
+    int componentIndex = 0;
+    DynamicArray *components = (DynamicArray *) malloc(sizeof(DynamicArray) * graph.getN());
+    double *alreadyTravelled = (double *) malloc(sizeof(double) * graph.getN());
+
+    for (int i = 0; i < graph.getN(); i++)
+        alreadyTravelled[i] = INFINITY;
+
+    for (int i = 0; i < graph.getN(); i++)
+        components[i] = DynamicArray();
+    
+    for (int i = 1; i <= graph.getN(); i++) {
+        if (alreadyTravelled[i - 1] == INFINITY) {
+            double *distance = (double *) malloc(sizeof(double) * graph.getN());
+            distance = getDistance(graph, graph.getN(), i);
+
+            for (int j = 0; j < graph.getN(); j++) {
+                if (distance[j] != INFINITY) {
+                    alreadyTravelled[j] = distance[j];
+                    components[componentIndex].append(j + 1);
+                }
+            }
+
+            componentIndex++;
+        }
+    }
+
+    return components;
+}
+
 int main() {
-    AdjacencyList graph;
-    graph.initialize(6);
+    int n = 7;
+    AdjacencyList graph(n);
     graph.addEdge(1, 2);
     graph.addEdge(2, 3);
     graph.addEdge(2, 4);
     graph.addEdge(3, 4);
     graph.addEdge(4, 5);
-
-    double *distance = (double *) malloc(sizeof(double) * 6);
-
-    distance = getDistance(graph, 6, 1);
-    for (int i = 0; i < 6; i++)
-        printf("%f\n", distance[i]);
+    graph.addEdge(6, 7);
+    DynamicArray *teste = (DynamicArray *) malloc(sizeof(DynamicArray) * 7);
+    for (int i = 0; i < 7; i++)
+        teste[i] = DynamicArray();
+    teste = getComponents(graph);
+    printf("%d\n", *((teste)->head + 4));
 }
