@@ -1,3 +1,5 @@
+#include <iostream>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -83,6 +85,15 @@ class DynamicArray {
         int getN() {
             return this->n;
         }
+
+        void printArray() {
+            if (this->max > 0) {
+                printf("%d", *(this->head));
+                for (int i = 1; i < this->n; ++i) {
+                    printf(" %d", *(this->head + i));
+                } printf("\n");
+            }   
+        }
 };
 
 class AdjacencyList {
@@ -90,7 +101,7 @@ class AdjacencyList {
         DynamicArray *head;
         int n;
         
-        AdjacencyList(int n) {
+        void setN(int n) {
             this->n = n;
             this->head = (DynamicArray *) malloc(sizeof(DynamicArray) * n);
             for (int i = 0; i < n; i++)
@@ -182,17 +193,40 @@ DynamicArray *getComponents(AdjacencyList graph) {
 }
 
 int main() {
-    int n = 7;
-    AdjacencyList graph(n);
-    graph.addEdge(1, 2);
-    graph.addEdge(2, 3);
-    graph.addEdge(2, 4);
-    graph.addEdge(3, 4);
-    graph.addEdge(4, 5);
-    graph.addEdge(6, 7);
-    DynamicArray *teste = (DynamicArray *) malloc(sizeof(DynamicArray) * 7);
-    for (int i = 0; i < 7; i++)
-        teste[i] = DynamicArray();
-    teste = getComponents(graph);
-    printf("%d\n", *((teste)->head + 4));
+    AdjacencyList graph;
+    std::string input_string;
+    int input_iterator = 0;
+    int n;
+    DynamicArray *components;
+
+    while (std::getline(std::cin, input_string)) {
+        if (!input_string.compare("")) {
+            break;
+        } else if (input_iterator < 2 || input_iterator == 3) {
+            input_iterator++;
+        } else if (input_iterator == 2) {
+            input_string.erase(0, 2);
+            n = stoi(input_string);
+            graph.setN(n);
+            components = (DynamicArray *) malloc(sizeof(DynamicArray) * n);
+            input_iterator++;
+        } else {
+            std::string delimiter = " ";
+            int a, b;
+            a = stoi(input_string.substr(0, input_string.find(delimiter)));
+            b = stoi(input_string.substr(input_string.find(delimiter)));
+            graph.addEdge(a, b);
+            input_iterator++;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        components[i] = DynamicArray();
+    
+    components = getComponents(graph);
+
+    for (int i = 0; i < n; i++) {
+        if (components[i].max > 1)
+            components[i].printArray();
+    }
 }
