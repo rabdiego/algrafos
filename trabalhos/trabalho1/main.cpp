@@ -87,12 +87,10 @@ class DynamicArray {
         }
 
         void printArray() {
-            if (this->max > 0) {
-                printf("%d", *(this->head));
-                for (int i = 1; i < this->n; ++i) {
-                    printf(" %d", *(this->head + i));
-                } printf("\n");
-            }   
+            printf("%d", *(this->head));
+            for (int i = 1; i < this->n; ++i) {
+                printf(" %d", *(this->head + i));
+            } printf("\n");
         }
 };
 
@@ -167,11 +165,10 @@ DynamicArray *getComponents(AdjacencyList graph) {
     DynamicArray *components = (DynamicArray *) malloc(sizeof(DynamicArray) * graph.getN());
     double *alreadyTravelled = (double *) malloc(sizeof(double) * graph.getN());
 
-    for (int i = 0; i < graph.getN(); i++)
+    for (int i = 0; i < graph.getN(); i++) {
         alreadyTravelled[i] = INFINITY;
-
-    for (int i = 0; i < graph.getN(); i++)
         components[i] = DynamicArray();
+    }
     
     for (int i = 1; i <= graph.getN(); i++) {
         if (alreadyTravelled[i - 1] == INFINITY) {
