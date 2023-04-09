@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -12,9 +11,11 @@ typedef struct _node {
 class Queue {
     public:
         Node *head;
+        Node *end;
 
         Queue() {
             this->head = NULL;
+            this->end = NULL;
         }
 
         int isEmpty() {
@@ -27,17 +28,12 @@ class Queue {
             Node *newNode = (Node *) malloc(sizeof(Node));
             newNode->key = key;
             newNode->next = NULL;
-            Node *a = NULL, *b = this->head;
-            
-            while (b != NULL) {
-                a = b;
-                b = b->next;
-            }
-
-            if (a != NULL) {
-                a->next = newNode;
-            } else {
+            if (this->isEmpty()) {
                 this->head = newNode;
+                this->end = newNode;
+            } else {
+                this->end->next = newNode;
+                this->end = newNode;
             }
         }
 
@@ -87,10 +83,10 @@ class DynamicArray {
         }
 
         void printArray() {
-            printf("%d", *(this->head));
-            for (int i = 1; i < this->n; ++i) {
-                printf(" %d", *(this->head + i));
-            } printf("\n");
+            std::cout << *(this->head);
+            for (int i = 1; i < this->n; ++i)
+                std::cout << " " << *(this->head + i);
+            std::cout << std::endl;
         }
 };
 
