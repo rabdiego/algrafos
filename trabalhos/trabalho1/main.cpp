@@ -2,8 +2,8 @@
 #include <string>
 #include <queue>
 #include <vector>
+#include <algorithm>
 #include <stdlib.h>
-#include <math.h>
 
 typedef struct _node {
     int key;
@@ -52,56 +52,39 @@ class AdjacencyList {
         }
 };
 
-double *getDistance(AdjacencyList graph, int n, int o) {
-    double *distance = (double *) malloc(sizeof(double) * n);
+std::vector <int> *getComponents(AdjacencyList graph) {
+    int n = graph.getN(), componentIndex = 0;
+    std::vector <int> *components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * n);
+    int *alreadyTravelled = (int *) malloc(sizeof(int) * n);
     std::queue <int> searchQueue;
 
     for (int i = 0; i < n; ++i)
-        distance[i] = INFINITY;
+        alreadyTravelled[i] = 0;
     
-    distance[o - 1] = 0.0;
+    for (int o = 1; o <= n; ++o) {
+        if (alreadyTravelled[o - 1] == 0) {
+            components[componentIndex].push_back(o);
+            alreadyTravelled[o - 1] = 1;
+            searchQueue.push(o);
 
-    searchQueue.push(o);
-
-    while (searchQueue.empty() == 0) {
-        int u = searchQueue.front();
-        searchQueue.pop();
-        for (int i = 0; i < n; ++i) {
-            if (graph.isNeighbour(u, (i+1)) && distance[i] == INFINITY) {
-                distance[i] = distance[u - 1] + 1;
-                searchQueue.push(i + 1);
-            }
-        }
-    }
-
-    return distance;
-}
-
-std::vector <int> *getComponents(AdjacencyList graph) {
-    int componentIndex = 0;
-    std::vector <int> *components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * graph.getN());
-    double *alreadyTravelled = (double *) malloc(sizeof(double) * graph.getN());
-    double *distance = (double *) malloc(sizeof(double) * graph.getN());
-
-    for (int i = 0; i < graph.getN(); i++) {
-        alreadyTravelled[i] = INFINITY;
-        components[i] = std::vector <int>();
-    }
-    
-    for (int i = 1; i <= graph.getN(); i++) {
-        if (alreadyTravelled[i - 1] == INFINITY) {
-            distance = getDistance(graph, graph.getN(), i);
-
-            for (int j = 0; j < graph.getN(); j++) {
-                if (distance[j] != INFINITY) {
-                    alreadyTravelled[j] = distance[j];
-                    components[componentIndex].push_back(j + 1);
+            while (!searchQueue.empty()) {
+                int v = searchQueue.front();
+                searchQueue.pop();
+                for (int i = 0; i < n; ++i) {
+                    if (graph.isNeighbour(v, (i + 1)) && alreadyTravelled[i] == 0) {
+                        components[componentIndex].push_back(i + 1);
+                        searchQueue.push(i + 1);
+                        alreadyTravelled[i] = 1;
+                    }
                 }
             }
 
             componentIndex++;
         }
     }
+
+    for (int i = 0; i < componentIndex; ++i)
+        std::sort(components[i].begin(), components[i].end());
 
     return components;
 }
