@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <queue>
+#include <vector>
 #include <stdlib.h>
 #include <math.h>
 
@@ -8,123 +10,41 @@ typedef struct _node {
     struct _node *next;
 } Node;
 
-class Queue {
-    public:
-        Node *head;
-        Node *end;
-
-        Queue() {
-            this->head = NULL;
-            this->end = NULL;
-        }
-
-        int isEmpty() {
-            if (this->head == NULL)
-                return 1;
-            return 0;
-        }
-
-        void enqueue(int key) {
-            Node *newNode = (Node *) malloc(sizeof(Node));
-            newNode->key = key;
-            newNode->next = NULL;
-            if (this->isEmpty()) {
-                this->head = newNode;
-                this->end = newNode;
-            } else {
-                this->end->next = newNode;
-                this->end = newNode;
-            }
-        }
-
-        int dequeue() {
-            Node *toFree = this->head;
-            if (toFree == NULL)
-                return -1;
-            int return_value = toFree->key;
-            this->head = toFree->next;
-            free(toFree);
-            return return_value;
-        }
-};
-
-class DynamicArray {
-    public:
-        int *head;
-        int max;
-        int n;
-
-        DynamicArray() {
-            this->head = (int *) malloc(sizeof(int));
-            this->max = 1;
-            this->n = 0;
-        }
-
-        void append(int k) {
-            *(this->head + this->n) = k;
-            this->n++;
-
-            if (this->n == this->max) {
-                this->max *= 2;
-                int *temp = (int *) malloc(sizeof(int) * this->max);
-                int *toFree = this->head;
-
-                for (int i = 0; i < this->n; i++) {
-                    temp[i] = toFree[i];
-                }
-
-                this->head = temp;
-                free(toFree);
-            }
-        }
-
-        int getN() {
-            return this->n;
-        }
-
-        void printArray() {
-            std::cout << *(this->head);
-            for (int i = 1; i < this->n; ++i)
-                std::cout << " " << *(this->head + i);
-            std::cout << std::endl;
-        }
-};
-
 class AdjacencyList {
     public:
-        DynamicArray *head;
+        std::vector <int> *head;
         int n;
         
         void setN(int n) {
             this->n = n;
-            this->head = (DynamicArray *) malloc(sizeof(DynamicArray) * n);
+            this->head = (std::vector <int> *) malloc(sizeof(std::vector <int>) * n);
             for (int i = 0; i < n; i++)
-                this->head[i] = DynamicArray();
+                this->head[i] = std::vector <int>();
         }
 
         void addEdge(int a, int b) {
-            (this->head[a - 1]).append(b);
-            (this->head[b - 1]).append(a);
+            (this->head[a - 1]).push_back(b);
+            (this->head[b - 1]).push_back(a);
         }
 
         int * getNeighbours(int a) {
-            return (this->head[a - 1]).head;
+            return &((this->head[a - 1])[0]);
         }
 
         int isNeighbour(int a, int b) {
             int is_neighbour = 0;
-            int n_neighbours = (this->head[a - 1]).n;
+            long unsigned int n_neighbours = (this->head[a - 1]).size();
 
-            for (int i = 0; i < n_neighbours; ++i) {
-                if (*(this->head[a - 1].head + i) == b)
+            for (long unsigned int i = 0; i < n_neighbours; ++i) {
+                if (*(&(this->head[a - 1][0]) + i) == b)
                     is_neighbour = 1;
             }
 
             return is_neighbour;
         }
 
-        int getDegree(int a) {
-            return (this->head[a - 1]).n;
+        long unsigned int getDegree(int a) {
+            return (this->head[a - 1]).size();
         }
 
         int getN() {
@@ -134,21 +54,22 @@ class AdjacencyList {
 
 double *getDistance(AdjacencyList graph, int n, int o) {
     double *distance = (double *) malloc(sizeof(double) * n);
-    Queue searchQueue;
+    std::queue <int> searchQueue;
 
     for (int i = 0; i < n; ++i)
         distance[i] = INFINITY;
     
     distance[o - 1] = 0.0;
 
-    searchQueue.enqueue(o);
+    searchQueue.push(o);
 
-    while (searchQueue.isEmpty() == 0) {
-        int u = searchQueue.dequeue() ;
+    while (searchQueue.empty() == 0) {
+        int u = searchQueue.front();
+        searchQueue.pop();
         for (int i = 0; i < n; ++i) {
             if (graph.isNeighbour(u, (i+1)) && distance[i] == INFINITY) {
                 distance[i] = distance[u - 1] + 1;
-                searchQueue.enqueue(i + 1);
+                searchQueue.push(i + 1);
             }
         }
     }
@@ -156,14 +77,14 @@ double *getDistance(AdjacencyList graph, int n, int o) {
     return distance;
 }
 
-DynamicArray *getComponents(AdjacencyList graph) {
+std::vector <int> *getComponents(AdjacencyList graph) {
     int componentIndex = 0;
-    DynamicArray *components = (DynamicArray *) malloc(sizeof(DynamicArray) * graph.getN());
+    std::vector <int> *components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * graph.getN());
     double *alreadyTravelled = (double *) malloc(sizeof(double) * graph.getN());
 
     for (int i = 0; i < graph.getN(); i++) {
         alreadyTravelled[i] = INFINITY;
-        components[i] = DynamicArray();
+        components[i] = std::vector <int>();
     }
     
     for (int i = 1; i <= graph.getN(); i++) {
@@ -174,7 +95,7 @@ DynamicArray *getComponents(AdjacencyList graph) {
             for (int j = 0; j < graph.getN(); j++) {
                 if (distance[j] != INFINITY) {
                     alreadyTravelled[j] = distance[j];
-                    components[componentIndex].append(j + 1);
+                    components[componentIndex].push_back(j + 1);
                 }
             }
 
@@ -190,7 +111,7 @@ int main() {
     std::string input_string;
     int input_iterator = 0;
     int n;
-    DynamicArray *components;
+    std::vector <int> *components;
 
     while (std::getline(std::cin, input_string)) {
         if (!input_string.compare("")) {
@@ -201,7 +122,7 @@ int main() {
             input_string.erase(0, 2);
             n = stoi(input_string);
             graph.setN(n);
-            components = (DynamicArray *) malloc(sizeof(DynamicArray) * n);
+            components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * n);
             input_iterator++;
         } else {
             std::string delimiter = " ";
@@ -214,12 +135,16 @@ int main() {
     }
 
     for (int i = 0; i < n; i++)
-        components[i] = DynamicArray();
+        components[i] = std::vector <int>();
     
     components = getComponents(graph);
 
     for (int i = 0; i < n; i++) {
-        if (components[i].max > 1)
-            components[i].printArray();
+        if (components[i].size() > 0) {
+            std::cout << components[i][0];
+            for (long unsigned int j = 1; j < components[i].size(); j++) {
+                std::cout << " " << components[i][j];
+            } std::cout << std::endl;
+        }
     }
 }
