@@ -52,9 +52,9 @@ class AdjacencyList {
         }
 };
 
-std::vector <int> *getComponents(AdjacencyList graph) {
-    int n = graph.getN(), componentIndex = 0;
-    std::vector <int> *components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * n);
+std::vector <std::vector <int>> getComponents(AdjacencyList graph) {
+    int n = graph.getN();
+    std::vector <std::vector <int>> components;
     int *alreadyTravelled = (int *) malloc(sizeof(int) * n);
     std::queue <int> searchQueue;
 
@@ -63,7 +63,8 @@ std::vector <int> *getComponents(AdjacencyList graph) {
     
     for (int o = 1; o <= n; ++o) {
         if (alreadyTravelled[o - 1] == 0) {
-            components[componentIndex].push_back(o);
+            std::vector <int> temp;
+            temp.push_back(o);
             alreadyTravelled[o - 1] = 1;
             searchQueue.push(o);
 
@@ -72,18 +73,18 @@ std::vector <int> *getComponents(AdjacencyList graph) {
                 searchQueue.pop();
                 for (int i = 0; i < n; ++i) {
                     if (graph.isNeighbour(v, (i + 1)) && alreadyTravelled[i] == 0) {
-                        components[componentIndex].push_back(i + 1);
+                        temp.push_back(i + 1);
                         searchQueue.push(i + 1);
                         alreadyTravelled[i] = 1;
                     }
                 }
             }
 
-            componentIndex++;
+            components.push_back(temp);
         }
     }
 
-    for (int i = 0; i < componentIndex; ++i)
+    for (long unsigned int i = 0; i < components.size(); ++i)
         std::sort(components[i].begin(), components[i].end());
 
     return components;
@@ -94,7 +95,7 @@ int main() {
     std::string input_string;
     int input_iterator = 0;
     int n;
-    std::vector <int> *components;
+    std::vector <std::vector <int>> components;
 
     while (std::getline(std::cin, input_string)) {
         if (!input_string.compare("")) {
@@ -105,7 +106,6 @@ int main() {
             input_string.erase(0, 2);
             n = stoi(input_string);
             graph.setN(n);
-            components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * n);
             input_iterator++;
         } else {
             std::string delimiter = " ";
@@ -116,13 +116,10 @@ int main() {
             input_iterator++;
         }
     }
-
-    for (int i = 0; i < n; i++)
-        components[i] = std::vector <int>();
     
     components = getComponents(graph);
 
-    for (int i = 0; i < n; i++) {
+    for (long unsigned int i = 0; i < components.size(); i++) {
         if (components[i].size() > 0) {
             std::cout << components[i][0];
             for (long unsigned int j = 1; j < components[i].size(); j++) {
