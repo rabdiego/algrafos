@@ -81,6 +81,7 @@ std::vector <int> *getComponents(AdjacencyList graph) {
     int componentIndex = 0;
     std::vector <int> *components = (std::vector <int> *) malloc(sizeof(std::vector <int>) * graph.getN());
     double *alreadyTravelled = (double *) malloc(sizeof(double) * graph.getN());
+    double *distance = (double *) malloc(sizeof(double) * graph.getN());
 
     for (int i = 0; i < graph.getN(); i++) {
         alreadyTravelled[i] = INFINITY;
@@ -89,7 +90,6 @@ std::vector <int> *getComponents(AdjacencyList graph) {
     
     for (int i = 1; i <= graph.getN(); i++) {
         if (alreadyTravelled[i - 1] == INFINITY) {
-            double *distance = (double *) malloc(sizeof(double) * graph.getN());
             distance = getDistance(graph, graph.getN(), i);
 
             for (int j = 0; j < graph.getN(); j++) {
