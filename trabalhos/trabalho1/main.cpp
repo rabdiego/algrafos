@@ -5,11 +5,6 @@
 #include <algorithm>
 #include <stdlib.h>
 
-typedef struct _node {
-    int key;
-    struct _node *next;
-} Node;
-
 class AdjacencyList {
     public:
         std::vector <int> *head;
@@ -27,8 +22,8 @@ class AdjacencyList {
             (this->head[b - 1]).push_back(a);
         }
 
-        int * getNeighbours(int a) {
-            return &((this->head[a - 1])[0]);
+        std::vector <int> getNeighbours(int a) {
+            return this->head[a - 1];
         }
 
         int isNeighbour(int a, int b) {
@@ -71,16 +66,17 @@ std::vector <std::vector <int>> getComponents(AdjacencyList graph) {
             while (!searchQueue.empty()) {
                 int v = searchQueue.front();
                 searchQueue.pop();
-                for (int i = 0; i < n; ++i) {
-                    if (graph.isNeighbour(v, (i + 1)) && alreadyTravelled[i] == 0) {
-                        temp.push_back(i + 1);
-                        searchQueue.push(i + 1);
-                        alreadyTravelled[i] = 1;
+                for (long unsigned int i = 0; i < graph.getNeighbours(v).size(); i++) {
+                    if (alreadyTravelled[graph.getNeighbours(v)[i] - 1] == 0) {
+                        temp.push_back(graph.getNeighbours(v)[i]);
+                        searchQueue.push(graph.getNeighbours(v)[i]);
+                        alreadyTravelled[graph.getNeighbours(v)[i] - 1] = 1;
                     }
+                    
                 }
             }
 
-            components.push_back(temp);
+            components.push_back(std::move(temp));
         }
     }
 
