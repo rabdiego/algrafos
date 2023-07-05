@@ -32,4 +32,8 @@ class Graph {
             this->vertexes[a].push_back({b, w});
             this->vertexes[b].push_back({a, w});
         }
+
+        std::map <int, std::vector <std::tuple <int, double>>> getVertexes() {
+            return this->vertexes;
+        }
 };
