@@ -140,14 +140,12 @@ Graph create_residual_graph(Graph g)
     return residual_graph;
 }
 
-std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o)
+std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o, int t)
 {
     int n = graph.getN();
     std::vector <std::vector <int>> distances;
     std::queue <int> queue;
     bool visited[n];
-    double min = INFINITY;
-    int iterator;
 
     for (int i = 0 ; i < n; ++i)
     {
@@ -179,22 +177,19 @@ std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o)
         }
     }
 
-    for (int i = 0; i < n; ++i)
-    {
-        if ((double) distances[i].size() < min)
-        {
-            min = (double) distances[i].size();
-            iterator = i;
-        }
-    }
-
-    return {distances[iterator + 1], (int) min};
+    return {distances[t - 1], distances[t - 1].size()};
 }
 
-double getMaxFlux(Graph graph)
+double getMaxFlux(Graph graph, int s, int t)
 {
     Graph residual_graph = create_residual_graph(graph);
-    return 0.0;
+    std::tuple <std::vector <int>, int> augmenting_path = breath_first_search(residual_graph, s, t);
+    int exists = std::get<1>(augmenting_path);
+
+    while (exists > 0)
+    {
+        // TODO
+    }
 }
 
 
@@ -252,7 +247,7 @@ int main()
         }
     }
 
-    std::tuple <std::vector <int>, int> asd = breath_first_search(graph, 1);
+    std::tuple <std::vector <int>, int> asd = breath_first_search(graph, 1, 3);
 
     for (int i = 0; i < std::get<0>(asd).size(); ++i)
     {
