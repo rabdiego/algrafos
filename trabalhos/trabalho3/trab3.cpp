@@ -97,13 +97,13 @@ class Graph
             }
         }
 
-        void changeWeight(int a, int b, double w)
+        void addWeight(int a, int b, double w)
         {
             auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
 
             int index = (int) (iterator - this->vertexes[a].begin());
 
-            this->vertexes[a].at(index) = {b, w};
+            this->vertexes[a].at(index) = {b, std::get<1>(this->vertexes[a].at(index)) + w};
         }
 };
 
@@ -186,25 +186,38 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
             }
         }
     }
-    
+
     return {distances[t - 1], *min_element(costs[t - 1].begin(), costs[t - 1].end())};
 }
 
-double getMaxFlux(Graph graph, int s, int t)
+void getMaxFlux(Graph graph, int s, int t)
 {
     Graph residual_graph = graph;
     std::tuple <std::vector <int>, int> augmenting_path;
     std::vector <int> exists;
+    int next = s;
+    double result = 0.0;
     
     while (1)
     {
         residual_graph = create_residual_graph(residual_graph);
         augmenting_path = breath_first_search(residual_graph, s, t);
-        exists = std::get<0>(augmenting_path);
+        std::copy(std::get<0>(augmenting_path).begin(),std::get<0>(augmenting_path).end(), back_inserter(exists));
 
         if (exists.size() <= 0)
         {
             break;
+        }
+        else
+        {
+            double bottleneck = std::get<1>(augmenting_path);
+            for (auto &node : exists)
+            {
+                residual_graph.addWeight(next, node, bottleneck);
+                residual_graph.addWeight(node, next, -bottleneck);
+            }
+            residual_graph.printEdges();
+            result += bottleneck;
         }
     }
 }
@@ -263,7 +276,5 @@ int main()
         }
     }
 
-    std::tuple <std::vector <int>, double> asd = breath_first_search(graph, 1, 3);
-
-    std::cout << std::get<1>(asd) << std::endl;
+    getMaxFlux(graph, 1, 3);
 }
