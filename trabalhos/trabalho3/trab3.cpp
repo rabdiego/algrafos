@@ -145,17 +145,17 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
 {
     int n = graph.getN();
     std::vector <std::vector <int>> distances;
-    double cost[n];
+    std::vector <std::vector <double>> costs;
     std::queue <int> queue;
     bool visited[n];
 
     for (int i = 0 ; i < n; ++i)
     {
         visited[i] = false;
-        cost[i] = 0.0;
     }
 
     distances.reserve(n);
+    costs.reserve(n);
     queue.push(o);
 
     visited[o - 1] = true;
@@ -166,22 +166,28 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
         queue.pop();
 
         for (int i = 0; i < graph.getNeighbours(v).size(); ++i)
-        {
+        { 
             if (visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] == false)
             {
                 std::vector <int> temp;
+                std::vector <double> temp2;
+
                 std::copy(distances[v - 1].begin(), distances[v - 1].end(), back_inserter(temp));
+                std::copy(costs[v - 1].begin(), costs[v - 1].end(), back_inserter(temp2));
+
                 temp.push_back(std::get<0>(graph.getNeighbours(v).at(i)));
+                temp2.push_back(std::get<1>(graph.getNeighbours(v).at(i)));
                 queue.push(std::get<0>(graph.getNeighbours(v).at(i)));
-                cost[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = cost[v-1] + std::get<1>(graph.getNeighbours(v).at(i));
                 visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = true;
+                
 
                 std::copy(temp.begin(), temp.end(), back_inserter(distances[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
+                std::copy(temp2.begin(), temp2.end(), back_inserter(costs[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
             }
         }
     }
-
-    return {distances[t - 1], cost[t - 1]};
+    
+    return {distances[t - 1], *min_element(costs[t - 1].begin(), costs[t - 1].end())};
 }
 
 double getMaxFlux(Graph graph, int s, int t)
