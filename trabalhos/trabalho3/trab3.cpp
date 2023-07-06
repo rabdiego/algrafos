@@ -107,7 +107,8 @@ class Graph
         }
 };
 
-void printVector(std::vector <int> vector)
+template <typename T>
+void printVector(std::vector <T> vector)
 {
     for (int i = 0; i < vector.size(); ++i)
     {
@@ -140,16 +141,18 @@ Graph create_residual_graph(Graph g)
     return residual_graph;
 }
 
-std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o, int t)
+std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, int t)
 {
     int n = graph.getN();
     std::vector <std::vector <int>> distances;
+    double cost[n];
     std::queue <int> queue;
     bool visited[n];
 
     for (int i = 0 ; i < n; ++i)
     {
         visited[i] = false;
+        cost[i] = 0.0;
     }
 
     distances.reserve(n);
@@ -170,6 +173,7 @@ std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o, int 
                 std::copy(distances[v - 1].begin(), distances[v - 1].end(), back_inserter(temp));
                 temp.push_back(std::get<0>(graph.getNeighbours(v).at(i)));
                 queue.push(std::get<0>(graph.getNeighbours(v).at(i)));
+                cost[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = cost[v-1] + std::get<1>(graph.getNeighbours(v).at(i));
                 visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = true;
 
                 std::copy(temp.begin(), temp.end(), back_inserter(distances[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
@@ -177,21 +181,20 @@ std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o, int 
         }
     }
 
-    return {distances[t - 1], distances[t - 1].size()};
+    return {distances[t - 1], cost[t - 1]};
 }
 
 double getMaxFlux(Graph graph, int s, int t)
 {
     Graph residual_graph = create_residual_graph(graph);
     std::tuple <std::vector <int>, int> augmenting_path = breath_first_search(residual_graph, s, t);
-    int exists = std::get<1>(augmenting_path);
+    std::vector <int> exists = std::get<0>(augmenting_path);
 
-    while (exists > 0)
+    while (exists.size()  > 0)
     {
         // TODO
     }
 }
-
 
 int main()
 {
@@ -247,10 +250,7 @@ int main()
         }
     }
 
-    std::tuple <std::vector <int>, int> asd = breath_first_search(graph, 1, 3);
+    std::tuple <std::vector <int>, double> asd = breath_first_search(graph, 1, 3);
 
-    for (int i = 0; i < std::get<0>(asd).size(); ++i)
-    {
-        std::cout << std::get<0>(asd)[i] << std::endl;
-    }
+    std::cout << std::get<1>(asd) << std::endl;
 }
