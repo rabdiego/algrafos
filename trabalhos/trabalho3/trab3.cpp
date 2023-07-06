@@ -186,13 +186,20 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
 
 double getMaxFlux(Graph graph, int s, int t)
 {
-    Graph residual_graph = create_residual_graph(graph);
-    std::tuple <std::vector <int>, int> augmenting_path = breath_first_search(residual_graph, s, t);
-    std::vector <int> exists = std::get<0>(augmenting_path);
-
-    while (exists.size()  > 0)
+    Graph residual_graph = graph;
+    std::tuple <std::vector <int>, int> augmenting_path;
+    std::vector <int> exists;
+    
+    while (1)
     {
-        // TODO
+        residual_graph = create_residual_graph(residual_graph);
+        augmenting_path = breath_first_search(residual_graph, s, t);
+        exists = std::get<0>(augmenting_path);
+
+        if (exists.size() <= 0)
+        {
+            break;
+        }
     }
 }
 
