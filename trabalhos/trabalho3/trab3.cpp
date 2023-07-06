@@ -101,9 +101,13 @@ class Graph
         {
             auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
 
-            int index = (int) (iterator - this->vertexes[a].begin());
 
-            this->vertexes[a].at(index) = {b, std::get<1>(this->vertexes[a].at(index)) + w};
+            if (iterator != this->vertexes[a].end())
+            {
+                int index = (int) (iterator - this->vertexes[a].begin());
+
+                this->vertexes[a].at(index) = {b, std::get<1>(this->vertexes[a].at(index)) + w};
+            }
         }
 };
 
@@ -144,9 +148,10 @@ Graph create_residual_graph(Graph g)
 std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, int t)
 {
     int n = graph.getN();
-    std::vector <std::vector <int>> distances;
-    std::vector <std::vector <double>> costs;
+    std::vector <std::vector <int>> distances(n, std::vector<int>());
+    std::vector <std::vector <double>> costs(n, std::vector<double>());
     std::queue <int> queue;
+    std::vector <int> error_vector(0);
     bool visited[n];
 
     for (int i = 0 ; i < n; ++i)
@@ -154,8 +159,6 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
         visited[i] = false;
     }
 
-    distances.reserve(n);
-    costs.reserve(n);
     queue.push(o);
 
     visited[o - 1] = true;
@@ -169,31 +172,40 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
         { 
             if (visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] == false)
             {
+                int node = std::get<0>(graph.getNeighbours(v).at(i)) - 1;
+                double weight = std::get<1>(graph.getNeighbours(v).at(i));
                 std::vector <int> temp;
                 std::vector <double> temp2;
 
                 std::copy(distances[v - 1].begin(), distances[v - 1].end(), back_inserter(temp));
                 std::copy(costs[v - 1].begin(), costs[v - 1].end(), back_inserter(temp2));
 
-                temp.push_back(std::get<0>(graph.getNeighbours(v).at(i)));
-                temp2.push_back(std::get<1>(graph.getNeighbours(v).at(i)));
-                queue.push(std::get<0>(graph.getNeighbours(v).at(i)));
-                visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = true;
+                temp.push_back(node + 1);
+                temp2.push_back(weight);
+                queue.push(node + 1);
+                visited[node] = true;
                 
 
-                std::copy(temp.begin(), temp.end(), back_inserter(distances[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
-                std::copy(temp2.begin(), temp2.end(), back_inserter(costs[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
+                std::copy(temp.begin(), temp.end(), back_inserter(distances[node]));
+                std::copy(temp2.begin(), temp2.end(), back_inserter(costs[node]));
             }
         }
     }
 
-    return {distances[t - 1], *min_element(costs[t - 1].begin(), costs[t - 1].end())};
+    if (visited[t - 1] == true)
+    {
+        return {distances[t - 1], *min_element(costs[t - 1].begin(), costs[t - 1].end())};
+    }
+    else
+    {
+        return {error_vector, 0.0};
+    }
 }
 
-void getMaxFlux(Graph graph, int s, int t)
+double getMaxFlux(Graph graph, int s, int t)
 {
     Graph residual_graph = graph;
-    std::tuple <std::vector <int>, int> augmenting_path;
+    std::tuple <std::vector <int>, double> augmenting_path;
     std::vector <int> exists;
     int next = s;
     double result = 0.0;
@@ -201,25 +213,28 @@ void getMaxFlux(Graph graph, int s, int t)
     while (1)
     {
         residual_graph = create_residual_graph(residual_graph);
-        augmenting_path = breath_first_search(residual_graph, s, t);
+        augmenting_path = breath_first_search(residual_graph, 1, 3);
         std::copy(std::get<0>(augmenting_path).begin(),std::get<0>(augmenting_path).end(), back_inserter(exists));
 
-        if (exists.size() <= 0)
+        if (std::get<1>(augmenting_path) > 0)
         {
             break;
         }
         else
         {
             double bottleneck = std::get<1>(augmenting_path);
+            std::cout <<"oi" << std::endl;
             for (auto &node : exists)
             {
-                residual_graph.addWeight(next, node, bottleneck);
-                residual_graph.addWeight(node, next, -bottleneck);
+                residual_graph.addWeight(next, node, -bottleneck);
+                residual_graph.addWeight(node, next, bottleneck);
             }
             residual_graph.printEdges();
             result += bottleneck;
         }
     }
+
+    return result;
 }
 
 int main()
@@ -234,7 +249,8 @@ int main()
     std::string teste;
     Graph graph, residual_graph;
 
-    while (std::getline(std::cin, input_string)) {
+    while (std::getline(std::cin, input_string)) 
+    {
         if (!input_string.compare(""))
         {
             break;
@@ -276,5 +292,5 @@ int main()
         }
     }
 
-    getMaxFlux(graph, 1, 3);
+    std::cout << getMaxFlux(graph, 1, 3) << std::endl;
 }
