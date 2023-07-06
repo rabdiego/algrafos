@@ -2,6 +2,9 @@
 #include <map>
 #include <tuple>
 #include <algorithm>
+#include <queue>
+#include <math.h>
+#include <iterator>
 #include <iostream>
 
 class Graph
@@ -49,7 +52,7 @@ class Graph
 
         std::tuple <int, double> isNeighbour(int a, int b)
         {
-            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [](const std::tuple<int, double>& e) {return std::get<0>(e) == 0;});
+            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
             
             int index = (int) (iterator - this->vertexes[a].begin());
             
@@ -93,7 +96,25 @@ class Graph
                 std::cout << std::endl;
             }
         }
+
+        void changeWeight(int a, int b, double w)
+        {
+            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
+
+            int index = (int) (iterator - this->vertexes[a].begin());
+
+            this->vertexes[a].at(index) = {b, w};
+        }
 };
+
+void printVector(std::vector <int> vector)
+{
+    for (int i = 0; i < vector.size(); ++i)
+    {
+        std::cout << vector[i] << ' ';
+    }
+    std::cout << std::endl;
+}
 
 Graph create_residual_graph(Graph g)
 {
@@ -111,13 +132,71 @@ Graph create_residual_graph(Graph g)
             
             if (std::get<0>(checker) == -1)
             {
-                residual_graph.addEdge(node, i, -weight);
+                residual_graph.addEdge(node, i, 0);
             }
         }
     }
 
     return residual_graph;
 }
+
+std::tuple <std::vector <int>, int> breath_first_search(Graph graph, int o)
+{
+    int n = graph.getN();
+    std::vector <std::vector <int>> distances;
+    std::queue <int> queue;
+    bool visited[n];
+    double min = INFINITY;
+    int iterator;
+
+    for (int i = 0 ; i < n; ++i)
+    {
+        visited[i] = false;
+    }
+
+    distances.reserve(n);
+    queue.push(o);
+
+    visited[o - 1] = true;
+
+    while (!queue.empty())
+    {
+        int v = queue.front();
+        queue.pop();
+
+        for (int i = 0; i < graph.getNeighbours(v).size(); ++i)
+        {
+            if (visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] == false)
+            {
+                std::vector <int> temp;
+                std::copy(distances[v - 1].begin(), distances[v - 1].end(), back_inserter(temp));
+                temp.push_back(std::get<0>(graph.getNeighbours(v).at(i)));
+                queue.push(std::get<0>(graph.getNeighbours(v).at(i)));
+                visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] = true;
+
+                std::copy(temp.begin(), temp.end(), back_inserter(distances[std::get<0>(graph.getNeighbours(v).at(i)) - 1]));
+            }
+        }
+    }
+
+    for (int i = 0; i < n; ++i)
+    {
+        if ((double) distances[i].size() < min)
+        {
+            min = (double) distances[i].size();
+            iterator = i;
+        }
+    }
+
+    return {distances[iterator + 1], (int) min};
+}
+
+double getMaxFlux(Graph graph)
+{
+    Graph residual_graph = create_residual_graph(graph);
+    return 0.0;
+}
+
 
 int main()
 {
@@ -173,10 +252,10 @@ int main()
         }
     }
 
+    std::tuple <std::vector <int>, int> asd = breath_first_search(graph, 1);
 
-    /*
-    Início do algorítmo
-    */
-
-    residual_graph = create_residual_graph(graph);
+    for (int i = 0; i < std::get<0>(asd).size(); ++i)
+    {
+        std::cout << std::get<0>(asd)[i] << std::endl;
+    }
 }
