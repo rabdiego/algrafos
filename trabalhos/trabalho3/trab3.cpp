@@ -185,7 +185,7 @@ std::tuple <std::vector <int>, double> breath_first_search(Graph graph, int o, i
 
         for (int i = 0; i < graph.getNeighbours(v).size(); ++i)
         { 
-            if (visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] == false)
+            if (visited[std::get<0>(graph.getNeighbours(v).at(i)) - 1] == false && std::get<1>(graph.getNeighbours(v).at(i)) > 0)
             {
                 int node = std::get<0>(graph.getNeighbours(v).at(i)) - 1;
                 double weight = std::get<1>(graph.getNeighbours(v).at(i));
@@ -221,15 +221,13 @@ double getMaxFlux(Graph graph, int s, int t)
 {
     Graph residual_graph = create_residual_graph(graph);
     std::tuple <std::vector <int>, double> augmenting_path;
-    std::vector <int> exists;
-    int next = s;
+    int next;
     double result = 0.0;
     
     while (1)
     {
         augmenting_path = breath_first_search(residual_graph, s, t);
         std::get<0>(augmenting_path).insert(std::get<0>(augmenting_path).begin(), 1);
-        std::copy(std::get<0>(augmenting_path).begin(),std::get<0>(augmenting_path).end(), back_inserter(exists));
 
         if (std::get<1>(augmenting_path) == 0)
         {
@@ -238,24 +236,13 @@ double getMaxFlux(Graph graph, int s, int t)
         else
         {
             double bottleneck = std::get<1>(augmenting_path);
-            printVector(std::get<0>(augmenting_path));
-            double can_i = true;
-            for (auto &node : exists)
+            next = s;
+            for (auto &node : std::get<0>(augmenting_path))
             {
-                if (residual_graph.getWeight(next, node) - bottleneck < 0)
-                {
-                    can_i = false;
-                }
+                residual_graph.addWeight(next, node, -bottleneck);
+                residual_graph.addWeight(node, next, bottleneck);
+                next = node;
             }
-            if (can_i == true)
-            {
-                for (auto &node : exists)
-                {
-                    residual_graph.addEdge(next, node, -bottleneck);
-                    residual_graph.addEdge(node, next, bottleneck);
-                }
-            }
-            residual_graph.printEdges();
             result += bottleneck;
         }
     }
@@ -318,5 +305,5 @@ int main()
         }
     }
 
-    std::cout << getMaxFlux(graph, 1, 6) << std::endl;
+    std::cout << getMaxFlux(graph, 1, 3) << std::endl;
 }
