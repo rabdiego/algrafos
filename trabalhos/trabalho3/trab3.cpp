@@ -143,11 +143,13 @@ Graph create_residual_graph(Graph g)
 
     for (int i = 1; i <= n; ++i)
     {
-        const auto& neighbours = g.getNeighbours(i);
+        std::vector <std::tuple <int, double>> neighbours;
 
-        for (const auto& neighbour : neighbours)
+        std::copy(g.getNeighbours(i).begin(), g.getNeighbours(i).end(), back_inserter(neighbours));
+
+        for (unsigned long int i = 0; i < neighbours.size(); ++i)
         {
-            int node = std::get<0>(neighbour);
+            int node = std::get<0>(neighbours[i]);
 
             if (std::get<0>(g.isNeighbour(node, i)) == 0)
             {
@@ -176,19 +178,22 @@ std::tuple<std::vector<int>, double> breath_first_search(Graph graph, int o, int
     queue.push(o);
     visited[o - 1] = true;
 
-    const auto& neighbours = graph.getNeighbours(o);
+    std::vector <std::tuple <int, double>> neighbours;
+
+    std::copy(graph.getNeighbours(o).begin(), graph.getNeighbours(o).end(), back_inserter(neighbours));
 
     while (!queue.empty())
     {
         int v = queue.front();
         queue.pop();
 
-        const auto& v_neighbours = graph.getNeighbours(v);
+        std::vector <std::tuple <int, double>> v_neighbours;
+        std::copy(graph.getNeighbours(v).begin(), graph.getNeighbours(v).end(), back_inserter(v_neighbours));
 
-        for (const auto& neighbour : v_neighbours)
+        for (unsigned long int i = 0; i < v_neighbours.size(); ++i)
         {
-            int node = std::get<0>(neighbour) - 1;
-            double weight = std::get<1>(neighbour);
+            int node = std::get<0>(v_neighbours[i]) - 1;
+            double weight = std::get<1>(v_neighbours[i]);
 
             if (!visited[node] && weight > 0)
             {
