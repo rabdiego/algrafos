@@ -144,8 +144,9 @@ Graph create_residual_graph(Graph g)
     for (int i = 1; i <= n; ++i)
     {
         std::vector <std::tuple <int, double>> neighbours;
+        std::vector <std::tuple <int, double>> teste = g.getNeighbours(i);
 
-        std::copy(g.getNeighbours(i).begin(), g.getNeighbours(i).end(), back_inserter(neighbours));
+        std::copy(teste.begin(), teste.end(), back_inserter(neighbours));
 
         for (unsigned long int i = 0; i < neighbours.size(); ++i)
         {
@@ -180,7 +181,8 @@ std::tuple<std::vector<int>, double> breath_first_search(Graph graph, int o, int
 
     std::vector <std::tuple <int, double>> neighbours;
 
-    std::copy(graph.getNeighbours(o).begin(), graph.getNeighbours(o).end(), back_inserter(neighbours));
+    std::vector <std::tuple <int, double>> teste2 = graph.getNeighbours(o);
+    std::copy(teste2.begin(), teste2.end(), back_inserter(neighbours));
 
     while (!queue.empty())
     {
@@ -188,7 +190,8 @@ std::tuple<std::vector<int>, double> breath_first_search(Graph graph, int o, int
         queue.pop();
 
         std::vector <std::tuple <int, double>> v_neighbours;
-        std::copy(graph.getNeighbours(v).begin(), graph.getNeighbours(v).end(), back_inserter(v_neighbours));
+        std::vector <std::tuple <int, double>> teste = graph.getNeighbours(v);
+        std::copy(teste.begin(), teste.end(), back_inserter(v_neighbours));
 
         for (unsigned long int i = 0; i < v_neighbours.size(); ++i)
         {
