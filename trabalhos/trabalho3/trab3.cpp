@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include <tuple>
 #include <algorithm>
 #include <queue>
@@ -10,13 +11,12 @@ class Graph
 {
     public:
         int n;
-        std::vector <std::vector <std::tuple <int, double>>> vertexes;
+        std::map <int, std::vector <std::tuple <int, double>>> vertexes;
     
     public:
         void setN(int n)
         {
             this->n = n;
-            this->vertexes.reserve(n);
 
             for (int i = 0; i < n; ++i)
             {
@@ -31,7 +31,7 @@ class Graph
 
         void addEdge(int a, int b, double w)
         {   
-            this->vertexes[a - 1].push_back({b, w});
+            this->vertexes[a].push_back({b, w});
         }
 
         int getN()
@@ -39,7 +39,7 @@ class Graph
             return this->n;
         }
 
-        std::vector <std::vector <std::tuple <int, double>>> getVertexes()
+        std::map <int, std::vector <std::tuple <int, double>>> getVertexes()
         {
             return this->vertexes;
 
@@ -47,18 +47,18 @@ class Graph
 
         std::vector <std:: tuple <int, double>> getNeighbours(int a)
         {
-            return this->vertexes[a - 1];
+            return this->vertexes[a];
         }
 
         std::tuple <int, double> isNeighbour(int a, int b)
         {
-            auto iterator = std::find_if(this->vertexes[a - 1].begin(), this->vertexes[a - 1].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
+            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
             
-            int index = (int) (iterator - this->vertexes[a - 1].begin());
+            int index = (int) (iterator - this->vertexes[a].begin());
             
-            if (iterator != this->vertexes[a - 1].end())
+            if (iterator != this->vertexes[a].end())
             {
-                return this->vertexes[a - 1].at(index);
+                return this->vertexes[a].at(index);
             }
             else
             {
@@ -99,27 +99,27 @@ class Graph
 
         void addWeight(int a, int b, double w)
         {
-            auto iterator = std::find_if(this->vertexes[a - 1].begin(), this->vertexes[a - 1].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
+            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
 
 
-            if (iterator != this->vertexes[a - 1].end())
+            if (iterator != this->vertexes[a].end())
             {
-                int index = (int) (iterator - this->vertexes[a - 1].begin());
+                int index = (int) (iterator - this->vertexes[a].begin());
 
-                this->vertexes[a - 1].at(index) = {b, std::get<1>(this->vertexes[a - 1].at(index)) + w};
+                this->vertexes[a].at(index) = {b, std::get<1>(this->vertexes[a].at(index)) + w};
             }
         }
 
         double getWeight(int a, int b)
         {
-            auto iterator = std::find_if(this->vertexes[a - 1].begin(), this->vertexes[a - 1].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
+            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
 
 
-            if (iterator != this->vertexes[a - 1].end())
+            if (iterator != this->vertexes[a].end())
             {
-                int index = (int) (iterator - this->vertexes[a - 1].begin());
+                int index = (int) (iterator - this->vertexes[a].begin());
 
-                return std::get<1>(this->vertexes[a - 1].at(index));
+                return std::get<1>(this->vertexes[a].at(index));
             }
 
             return -1;
@@ -143,14 +143,11 @@ Graph create_residual_graph(Graph g)
 
     for (int i = 1; i <= n; ++i)
     {
-        std::vector <std::tuple <int, double>> neighbours;
-        std::vector <std::tuple <int, double>> teste = g.getNeighbours(i);
+        const auto& neighbours = g.getNeighbours(i);
 
-        std::copy(teste.begin(), teste.end(), back_inserter(neighbours));
-
-        for (unsigned long int i = 0; i < neighbours.size(); ++i)
+        for (const auto& neighbour : neighbours)
         {
-            int node = std::get<0>(neighbours[i]);
+            int node = std::get<0>(neighbour);
 
             if (std::get<0>(g.isNeighbour(node, i)) == 0)
             {
@@ -179,24 +176,19 @@ std::tuple<std::vector<int>, double> breath_first_search(Graph graph, int o, int
     queue.push(o);
     visited[o - 1] = true;
 
-    std::vector <std::tuple <int, double>> neighbours;
-
-    std::vector <std::tuple <int, double>> teste2 = graph.getNeighbours(o);
-    std::copy(teste2.begin(), teste2.end(), back_inserter(neighbours));
+    const auto& neighbours = graph.getNeighbours(o);
 
     while (!queue.empty())
     {
         int v = queue.front();
         queue.pop();
 
-        std::vector <std::tuple <int, double>> v_neighbours;
-        std::vector <std::tuple <int, double>> teste = graph.getNeighbours(v);
-        std::copy(teste.begin(), teste.end(), back_inserter(v_neighbours));
+        const auto& v_neighbours = graph.getNeighbours(v);
 
-        for (unsigned long int i = 0; i < v_neighbours.size(); ++i)
+        for (const auto& neighbour : v_neighbours)
         {
-            int node = std::get<0>(v_neighbours[i]) - 1;
-            double weight = std::get<1>(v_neighbours[i]);
+            int node = std::get<0>(neighbour) - 1;
+            double weight = std::get<1>(neighbour);
 
             if (!visited[node] && weight > 0)
             {
