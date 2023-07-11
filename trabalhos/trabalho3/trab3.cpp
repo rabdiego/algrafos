@@ -99,27 +99,28 @@ class Graph
 
         void addWeight(int a, int b, double w)
         {
-            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
-
-
-            if (iterator != this->vertexes[a].end())
+            int i = 0;
+            for (const auto &neighbour : this->vertexes[a])
             {
-                int index = (int) (iterator - this->vertexes[a].begin());
-
-                this->vertexes[a].at(index) = {b, std::get<1>(this->vertexes[a].at(index)) + w};
+                if (std::get<0>(neighbour) == b)
+                {
+                    this->vertexes[a].at(i) = {b, std::get<1>(this->vertexes[a].at(i)) + w};
+                    break;
+                }
+                i++;
             }
         }
 
         double getWeight(int a, int b)
         {
-            auto iterator = std::find_if(this->vertexes[a].begin(), this->vertexes[a].end(), [&b](const std::tuple<int, double>& e) {return std::get<0>(e) == b;});
-
-
-            if (iterator != this->vertexes[a].end())
+            int i = 0;
+            for (const auto &neighbour : this->vertexes[a])
             {
-                int index = (int) (iterator - this->vertexes[a].begin());
-
-                return std::get<1>(this->vertexes[a].at(index));
+                if (std::get<0>(neighbour) == b)
+                {
+                    return std::get<1>(neighbour);
+                }
+                i++;
             }
 
             return -1;
